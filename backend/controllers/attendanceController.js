@@ -1,7 +1,7 @@
 import Attendance from "../models/attendanceSchema.js";
 import { handleValidationError } from "../middlewares/errorHandler.js";
 
-export const markAttendance = async (req, res, next) => {
+export const createAttendance = async (req, res, next) => {
   const { attendanceData } = req.body;
   try {
     if (

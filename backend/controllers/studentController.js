@@ -1,29 +1,60 @@
 import { Student } from "../models/studentSchema.js";
-import { handleValidationError } from "../middlewares/errorHandler.js";
+
+// Create a new student
 export const createStudent = async (req, res, next) => {
-  console.log(req.body);
-  const { name, registrationNumber, grade } = req.body;
+  console.log("Received data:", req.body);
+
+  const { name, registrationNumber, grade, age, gender, email, profileImage } =
+    req.body;
+
   try {
-    if (!name || !registrationNumber || !grade) {
-      return next("Please Fill full form", 400);
+    if (!name || !registrationNumber || !grade || !age || !gender || !email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please fill all fields" });
     }
-    await Student.create({ name, registrationNumber, grade });
-    res.status(200).json({
-      sucess: true,
-      message: "student created successfully",
+
+    const student = new Student({
+      name,
+      registrationNumber,
+      grade,
+      age,
+      gender,
+      email,
+      profileImage,
+    });
+
+    await student.save(); // Ensuring save() is used
+
+    res.status(201).json({
+      success: true,
+      message: "Student created successfully",
+      student, // Return created student
     });
   } catch (err) {
-    next(err);
+    console.error("Error creating student:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: err.message,
+    });
   }
 };
+
+// Get all students
 export const getAllStudents = async (req, res, next) => {
   try {
     const students = await Student.find();
     res.status(200).json({
-      sucess: true,
+      success: true,
       students,
     });
   } catch (err) {
-    next(err);
+    console.error("Error fetching students:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: err.message,
+    });
   }
 };

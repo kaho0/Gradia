@@ -1,6 +1,6 @@
 // styles.js
-import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import styled from "styled-components";
+import { Link } from "react-router-dom";
 
 export const Navbar = styled.nav`
   position: fixed;
@@ -11,10 +11,18 @@ export const Navbar = styled.nav`
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  background-color: #6BD4E7;
+  background-color: #6bd4e7;
   color: black;
   font-family: Arial, sans-serif;
   z-index: 1000;
+  box-shadow: 0 4px 6px rgba(68, 23, 82, 0.1);
+  background-color: #441752;
+  color: #efb6c8;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(68, 23, 82, 0.95);
+  }
 
   @media screen and (max-width: 768px) {
     flex-direction: column;
@@ -111,7 +119,7 @@ export const HomeContainer = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background: linear-gradient(45deg, #6BD4E7, #6FC3DF);
+  background: linear-gradient(45deg, #6bd4e7, #6fc3df);
   background-size: cover;
   background-position: center;
   min-height: 100vh;

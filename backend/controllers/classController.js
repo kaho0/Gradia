@@ -1,4 +1,4 @@
-import { Class } from "./models/classSchema.js"; // Ensure the path to your model is correct
+import { Class } from "../models/classSchema.js"; // Ensure the path to your model is correct
 import { handleValidationError } from "../middlewares/errorHandler.js";
 // Controller to handle class-related operations
 export const createClass = async (req, res, next) => {

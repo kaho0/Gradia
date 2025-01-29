@@ -1,7 +1,7 @@
 // AnnouncementSection.js
-import React, { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import Sidebar from "./Sidebar";
+import axios from "axios";
 import {
   AnnouncementContainer,
   SidebarContainer,
@@ -11,7 +11,7 @@ import {
   AnnouncementItem,
   AnnouncementTitle,
   AnnouncementContent,
-} from '../../styles/AnnouncementStyles'; 
+} from "../../styles/AnnouncementStyles";
 
 const AnnouncementSection = () => {
   const [announcements, setAnnouncements] = useState([]);
@@ -22,10 +22,12 @@ const AnnouncementSection = () => {
 
   const fetchAnnouncements = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/v1/announcements/getall');
+      const response = await axios.get(
+        "http://localhost:4000/api/v1/announcements/getall"
+      );
       setAnnouncements(response.data.announcements);
     } catch (error) {
-      console.error('Error fetching announcements:', error);
+      console.error("Error fetching announcements:", error);
     }
   };
 
