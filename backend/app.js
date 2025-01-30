@@ -23,11 +23,12 @@ const app = express();
 // Connect to the database
 dbConnection();
 
-// Enable CORS
+// ✅ Fix CORS Configuration
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL], // Ensure FRONTEND_URL is set in config.env
+    origin: process.env.FRONTEND_URL?.trim() || "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
@@ -36,10 +37,15 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Debugging log for every request
+// ✅ Debugging log for every request
 app.use((req, res, next) => {
   console.log(`[${req.method}] ${req.url} - ${JSON.stringify(req.body)}`);
   next();
+});
+
+// ✅ Test CORS Route
+app.get("/test-cors", (req, res) => {
+  res.json({ message: "CORS is working!" });
 });
 
 // API Routes
@@ -50,7 +56,7 @@ app.use("/api/v1/announcements", announcementRouter);
 app.use("/api/v1/class", classRouter);
 app.use("/api/v1/library", libraryRouter);
 app.use("/api/v1/events", eventRouter);
-app.use("/api/v1/exam", examRouter);
+app.use("/api/v1/exams", examRouter);
 app.use("/api/v1/attendance", attendanceRouter);
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/register", adminRegisterRouter);

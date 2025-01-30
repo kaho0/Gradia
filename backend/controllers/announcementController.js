@@ -118,3 +118,31 @@ export const deleteAnnouncement = async (req, res, next) => {
     next(err);
   }
 };
+
+// Mark announcement as read
+export const markAsRead = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const announcement = await Announcement.findByIdAndUpdate(
+      id,
+      { isRead: true }, // Update the isRead field
+      { new: true }
+    );
+
+    if (!announcement) {
+      return res.status(404).json({
+        success: false,
+        message: "Announcement not found!",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Announcement marked as read successfully!",
+      announcement,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

@@ -9,18 +9,26 @@ export const createAttendance = async (req, res, next) => {
       !Array.isArray(attendanceData) ||
       attendanceData.length === 0
     ) {
-      handleValidationError("Attendance data is missing or invalid!", 400);
+      return next(
+        handleValidationError("Attendance data is missing or invalid!", 400)
+      );
     }
-    const attendanceRecords = await Promise.all(
-      attendanceData.map(async (record) => {
-        const { student, status } = record;
-        return await Attendance.create({ student, status });
-      })
-    );
-    res.status(200).json({
+
+    const attendanceRecords = [];
+    for (const record of attendanceData) {
+      try {
+        const newAttendance = await Attendance.create(record);
+        attendanceRecords.push(newAttendance);
+      } catch (error) {
+        console.error("Failed to create attendance record:", error);
+      }
+    }
+
+    res.status(201).json({
       success: true,
       message: "Attendance marked successfully!",
-      attendanceRecords,
+      count: attendanceRecords.length,
+      data: attendanceRecords,
     });
   } catch (err) {
     next(err);
@@ -33,9 +41,11 @@ export const getAllAttendance = async (req, res, next) => {
       "student",
       "name registrationNumber grade"
     );
+
     res.status(200).json({
       success: true,
-      attendanceRecords,
+      count: attendanceRecords.length,
+      data: attendanceRecords,
     });
   } catch (err) {
     next(err);

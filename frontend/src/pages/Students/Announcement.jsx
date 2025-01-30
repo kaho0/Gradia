@@ -1,20 +1,13 @@
-// AnnouncementSection.js
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import axios from "axios";
-import {
-  AnnouncementContainer,
-  SidebarContainer,
-  Content,
-  AnnouncementHeader,
-  AnnouncementList,
-  AnnouncementItem,
-  AnnouncementTitle,
-  AnnouncementContent,
-} from "../../styles/AnnouncementStyles";
+import { MdDone, MdError } from "react-icons/md";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 const AnnouncementSection = () => {
   const [announcements, setAnnouncements] = useState([]);
+  const MySwal = withReactContent(Swal);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -32,21 +25,56 @@ const AnnouncementSection = () => {
   };
 
   return (
-    <AnnouncementContainer>
-      <SidebarContainer>
+    <div className="flex">
+      <div className="w-1/4 text-white min-h-screen">
         <Sidebar />
-      </SidebarContainer>
-      <Content>
-        <AnnouncementHeader>Announcements</AnnouncementHeader>
-        <AnnouncementList>
+      </div>
+      <div className="w-3/4 p-6 bg-gradient-to-r from-indigo-100 via-gray-100 to-white min-h-screen">
+        <h1 className="text-3xl font-mono font-semibold text-gray-800 mb-8">
+          Announcements
+        </h1>
+        <div className="space-y-6">
           {announcements.map((announcement) => (
-            <AnnouncementItem key={announcement._id}>
-              <AnnouncementTitle>{announcement.announcement}</AnnouncementTitle>
-            </AnnouncementItem>
+            <div
+              key={announcement._id}
+              className={`p-6 bg-white shadow-lg rounded-lg flex justify-between items-center ${
+                !announcement.isRead ? "border-l-4 border-indigo-500" : ""
+              }`}
+            >
+              <div>
+                <h2 className="text-xl font-bold text-gray-800 mb-2 font-raleway">
+                  {announcement.title}
+                </h2>
+                <p className="text-gray-700 text-sm font-raleway">
+                  {announcement.description}
+                </p>
+                <p className="text-xs text-gray-500 mt-2 font-raleway">
+                  <span className="font-semibold">Author:</span>{" "}
+                  {announcement.author}
+                </p>
+                <p className="text-xs text-gray-500 mt-1 font-raleway">
+                  <span className="font-semibold">Expires:</span>{" "}
+                  {announcement.expirationDate
+                    ? new Date(announcement.expirationDate).toLocaleDateString()
+                    : "N/A"}
+                </p>
+              </div>
+              <div className="flex items-center">
+                {announcement.isRead ? (
+                  <span className="text-green-500 font-medium flex items-center font-ranch">
+                    <MdDone className="mr-1" /> Read
+                  </span>
+                ) : (
+                  <span className="text-yellow-500 font-medium flex items-center font-ranch">
+                    <MdError className="mr-1" /> Unread
+                  </span>
+                )}
+              </div>
+            </div>
           ))}
-        </AnnouncementList>
-      </Content>
-    </AnnouncementContainer>
+        </div>
+      </div>
+    </div>
   );
 };
 

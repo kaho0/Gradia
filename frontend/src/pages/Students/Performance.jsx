@@ -1,66 +1,112 @@
-// PerformanceSection.js
-import React from 'react';
-import Sidebar from './Sidebar';
-// import { Line } from 'react-chartjs-2';
-import {
-  PerformanceContainer,
-  SidebarContainer,
-  Content,
-  PerformanceHeader,
-  PerformanceInfo,
-  PerformanceGraphContainer,
-  TotalMarks,
-} from '../../styles/PerformanceStyles'; // Import styled components from PerformanceSectionStyles.js
+import React, { useEffect, useState } from "react";
+import { Line } from "react-chartjs-2";
+import Sidebar from "./Sidebar";
 
 const PerformanceSection = () => {
-  // Sample performance data
-  const performanceData = {
-    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    marks: [80, 85, 90, 88, 92, 85], // Sample marks for each month
-    totalMarks: 520 // Sample total marks for the year
-  };
+  const [performanceData, setPerformanceData] = useState({
+    months: [],
+    marks: [],
+    totalMarks: 0,
+  });
+
+  // Fetch performance data from the backend
+  useEffect(() => {
+    const fetchPerformanceData = async () => {
+      try {
+        const response = await fetch("/api/v1/performance"); // Replace with your actual API endpoint
+        const data = await response.json();
+        setPerformanceData(data);
+      } catch (error) {
+        console.error("Error fetching performance data:", error);
+      }
+    };
+
+    fetchPerformanceData();
+  }, []);
 
   // Line chart data
   const lineChartData = {
     labels: performanceData.months,
     datasets: [
       {
-        label: 'Performance Trends',
+        label: "Performance Trends",
         fill: false,
         lineTension: 0.1,
-        backgroundColor: '#007bff',
-        borderColor: '#007bff',
-        data: performanceData.marks
-      }
-    ]
+        backgroundColor: "#007bff",
+        borderColor: "#007bff",
+        data: performanceData.marks,
+      },
+    ],
+  };
+
+  // Inline styles
+  const styles = {
+    performanceContainer: {
+      display: "flex",
+      height: "100vh",
+      backgroundColor: "#f4f4f4",
+    },
+    sidebarContainer: {
+      width: "250px",
+      backgroundColor: "#333",
+      color: "#fff",
+    },
+    content: {
+      flex: 1,
+      padding: "20px",
+    },
+    performanceHeader: {
+      fontSize: "24px",
+      fontWeight: "bold",
+      marginBottom: "20px",
+    },
+    performanceInfo: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    },
+    performanceGraphContainer: {
+      width: "80%",
+      maxWidth: "800px",
+      marginBottom: "20px",
+    },
+    totalMarks: {
+      fontSize: "18px",
+      fontWeight: "bold",
+      color: "#007bff",
+    },
   };
 
   return (
-    <PerformanceContainer>
-      <SidebarContainer>
+    <div style={styles.performanceContainer}>
+      <div style={styles.sidebarContainer}>
         <Sidebar />
-      </SidebarContainer>
-      <Content>
-        <PerformanceHeader>Performance</PerformanceHeader>
-        <PerformanceInfo>
-          <PerformanceGraphContainer>
+      </div>
+      <div style={styles.content}>
+        <h1 style={styles.performanceHeader}>Performance</h1>
+        <div style={styles.performanceInfo}>
+          <div style={styles.performanceGraphContainer}>
             <Line
               data={lineChartData}
               options={{
                 scales: {
-                  yAxes: [{
-                    ticks: {
-                      beginAtZero: true
-                    }
-                  }]
-                }
+                  yAxes: [
+                    {
+                      ticks: {
+                        beginAtZero: true,
+                      },
+                    },
+                  ],
+                },
               }}
             />
-          </PerformanceGraphContainer>
-          <TotalMarks>Total Marks: {performanceData.totalMarks}</TotalMarks>
-        </PerformanceInfo>
-      </Content>
-    </PerformanceContainer>
+          </div>
+          <p style={styles.totalMarks}>
+            Total Marks: {performanceData.totalMarks}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 

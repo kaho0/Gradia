@@ -1,3 +1,4 @@
+import { Exam } from "../models/examSchema.js";
 export const createExam = async (req, res, next) => {
   const { title, subject, date, duration, teacher, grade } = req.body;
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Sidebar from "./Sidebar";
-import { FaGraduationCap, FaPhone, FaEnvelope } from "react-icons/fa";
+import { FaPhone, FaEnvelope } from "react-icons/fa";
 
 const ProfileSection = () => {
   const [studentProfile, setStudentProfile] = useState({
@@ -12,6 +12,8 @@ const ProfileSection = () => {
     email: "",
     profileImage: "https://via.placeholder.com/150",
   });
+
+  const [submittedProfile, setSubmittedProfile] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,6 +37,7 @@ const ProfileSection = () => {
       .then((data) => {
         if (data.success) {
           alert("Profile saved successfully!");
+          setSubmittedProfile(studentProfile); // Update submitted profile for preview
         } else {
           alert("Error saving profile.");
         }
@@ -49,14 +52,14 @@ const ProfileSection = () => {
         <Sidebar />
       </div>
 
-      {/* Profile Content */}
+      {/* Main Content */}
       <div className="w-3/4 p-6">
         <h2 className="text-2xl font-semibold mb-4">Create/Update Profile</h2>
 
         {/* Profile Form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow-lg rounded-xl p-6"
+          className="bg-white shadow-lg rounded-xl p-6 mb-6"
         >
           {/* Profile Image */}
           <div className="mb-4">
@@ -73,101 +76,39 @@ const ProfileSection = () => {
             />
           </div>
 
-          {/* Name */}
-          <div className="mb-4">
-            <label htmlFor="name" className="block font-semibold mb-2">
-              Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={studentProfile.name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              required
-            />
-          </div>
-
-          {/* Registration Number */}
-          <div className="mb-4">
-            <label
-              htmlFor="registrationNumber"
-              className="block font-semibold mb-2"
-            >
-              Registration Number
-            </label>
-            <input
-              type="text"
-              id="registrationNumber"
-              name="registrationNumber"
-              value={studentProfile.registrationNumber}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              required
-            />
-          </div>
-
-          {/* Grade */}
-          <div className="mb-4">
-            <label htmlFor="grade" className="block font-semibold mb-2">
-              Grade
-            </label>
-            <input
-              type="text"
-              id="grade"
-              name="grade"
-              value={studentProfile.grade}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              required
-            />
-          </div>
-
-          {/* Age */}
-          <div className="mb-4">
-            <label htmlFor="age" className="block font-semibold mb-2">
-              Age
-            </label>
-            <input
-              type="number"
-              id="age"
-              name="age"
-              value={studentProfile.age}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-            />
-          </div>
-
-          {/* Gender */}
-          <div className="mb-4">
-            <label htmlFor="gender" className="block font-semibold mb-2">
-              Gender
-            </label>
-            <input
-              type="text"
-              id="gender"
-              name="gender"
-              value={studentProfile.gender}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-            />
-          </div>
-
-          {/* Email */}
-          <div className="mb-4">
-            <label htmlFor="email" className="block font-semibold mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={studentProfile.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-            />
-          </div>
+          {/* Other Input Fields */}
+          {[
+            "name",
+            "registrationNumber",
+            "grade",
+            "age",
+            "gender",
+            "email",
+          ].map((field) => (
+            <div className="mb-4" key={field}>
+              <label
+                htmlFor={field}
+                className="block font-semibold mb-2 capitalize"
+              >
+                {field === "registrationNumber" ? "Registration Number" : field}
+              </label>
+              <input
+                type={
+                  field === "age"
+                    ? "number"
+                    : field === "email"
+                    ? "email"
+                    : "text"
+                }
+                id={field}
+                name={field}
+                value={studentProfile[field]}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                required={field !== "profileImage"}
+              />
+            </div>
+          ))}
 
           {/* Submit Button */}
           <button
@@ -177,6 +118,29 @@ const ProfileSection = () => {
             Save Profile
           </button>
         </form>
+
+        {/* Profile Preview */}
+        {submittedProfile && (
+          <div className="bg-white shadow-lg rounded-xl p-6 flex items-center">
+            <img
+              src={submittedProfile.profileImage}
+              alt="Profile"
+              className="w-24 h-24 rounded-full mr-6"
+            />
+            <div>
+              <h3 className="text-xl font-semibold">{submittedProfile.name}</h3>
+              <p className="text-gray-500 mb-2">{submittedProfile.grade}</p>
+              <p className="text-gray-500">
+                Age: {submittedProfile.age} | Gender: {submittedProfile.gender}
+              </p>
+              <p className="text-gray-500">Email: {submittedProfile.email}</p>
+              <div className="flex mt-4 space-x-4">
+                <FaPhone className="text-blue-500" />
+                <FaEnvelope className="text-blue-500" />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
