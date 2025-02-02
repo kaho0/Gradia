@@ -13,6 +13,8 @@ import examRouter from "./routers/examRouter.js";
 import attendanceRouter from "./routers/attendanceRouter.js";
 import usersRouter from "./routers/usersRouter.js";
 import adminRegisterRouter from "./routers/adminRegisterRouter.js";
+// Add rating router import
+import ratingRouter from "./routers/ratingRouter.js"; // 👈 Add this line
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 // Load environment variables
@@ -60,6 +62,8 @@ app.use("/api/v1/exams", examRouter);
 app.use("/api/v1/attendance", attendanceRouter);
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/register", adminRegisterRouter);
+// Add rating routes 👇
+app.use("/api/v1/ratings", ratingRouter); // 👈 Add this line
 
 // Error handling middleware (should be at the bottom)
 app.use(errorHandler);

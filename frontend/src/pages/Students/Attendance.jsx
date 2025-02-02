@@ -1,44 +1,23 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  FaSearch,
-  FaFilter,
+  FaPlus,
+  FaUser,
+  FaCalendarAlt,
   FaCheckCircle,
   FaTimesCircle,
   FaExclamationCircle,
-  FaPlus,
 } from "react-icons/fa";
 import Sidebar from "./Sidebar";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import Swal from "sweetalert2";
 
 const StudentAttendance = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [chartData, setChartData] = useState(null);
   const [newAttendance, setNewAttendance] = useState({
+    student: "",
     date: "",
     course: "",
+    month: "",
     status: "Present",
   });
 
@@ -49,106 +28,203 @@ const StudentAttendance = () => {
   const fetchAttendanceRecords = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/v1/attendance/student"
+        "http://localhost:4000/api/v1/attendance/getall"
       );
-      const records = response.data.attendance || [];
-      setAttendanceRecords(records);
-      generateChartData(records);
+      setAttendanceRecords(response.data.attendance || []);
     } catch (error) {
+      console.error("Error fetching attendance records:", error);
       setAttendanceRecords([]);
     }
   };
 
-  const handleMarkAttendance = async () => {
-    try {
-      await axios.post(
-        "http://localhost:4000/api/v1/attendance/mark",
-        newAttendance
-      );
-      fetchAttendanceRecords();
-      setNewAttendance({ date: "", course: "", status: "Present" });
-    } catch (error) {
-      console.error("Error marking attendance:", error);
+  const handleMarkAttendance = async (e) => {
+    e.preventDefault();
+    const result = await Swal.fire({
+      title: "Mark Attendance?",
+      text: "Are you sure you want to submit this attendance record?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#6d28d9",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, submit it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.post(
+          "http://localhost:4000/api/v1/attendance",
+          newAttendance
+        );
+        fetchAttendanceRecords();
+        setNewAttendance({
+          student: "",
+          date: "",
+          course: "",
+          month: "",
+          status: "Present",
+        });
+        Swal.fire({
+          title: "Success!",
+          text: "Attendance marked successfully.",
+          icon: "success",
+          confirmButtonColor: "#6d28d9",
+        });
+      } catch (error) {
+        console.error("Error marking attendance:", error);
+        Swal.fire({
+          title: "Error!",
+          text: "Failed to mark attendance. Please try again.",
+          icon: "error",
+          confirmButtonColor: "#6d28d9",
+        });
+      }
     }
   };
 
-  const generateChartData = (records) => {
-    const dates = records.map((record) => record.date);
-    const statusCounts = {
-      Present: records.filter((record) => record.status === "Present").length,
-      Absent: records.filter((record) => record.status === "Absent").length,
-      "Absent with Apology": records.filter(
-        (record) => record.status === "Absent with Apology"
-      ).length,
-    };
-
-    setChartData({
-      labels: dates,
-      datasets: [
-        {
-          label: "Attendance Overview",
-          data: [
-            statusCounts.Present,
-            statusCounts.Absent,
-            statusCounts["Absent with Apology"],
-          ],
-          borderColor: "rgba(75, 192, 192, 1)",
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
-          tension: 0.1,
-        },
-      ],
-    });
+  const renderStatusIcon = (status) => {
+    switch (status) {
+      case "Present":
+        return <FaCheckCircle className="text-green-500" />;
+      case "Absent":
+        return <FaTimesCircle className="text-red-500" />;
+      case "Absent with apology":
+        return <FaExclamationCircle className="text-yellow-500" />;
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="flex">
-      <div className="w-1/4 text-white min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
+      <div className="w-1/4 bg-white shadow-lg">
         <Sidebar />
       </div>
-      <div className="w-3/4 p-6 bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100">
-        <h1 className="text-3xl font-semibold text-blue-700 mb-6">
-          My Attendance
+
+      <div className="w-3/4 p-8">
+        <h1 className="text-3xl font-poppins font-semibold text-purple-600 mb-8">
+          Student Attendance
         </h1>
-        <div className="mb-6 p-4 bg-white shadow rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Mark Attendance</h2>
-          <div className="flex space-x-4">
-            <input
-              type="date"
-              value={newAttendance.date}
-              onChange={(e) =>
-                setNewAttendance({ ...newAttendance, date: e.target.value })
-              }
-              className="border p-2 rounded w-1/3"
-            />
-            <input
-              type="text"
-              placeholder="Course"
-              value={newAttendance.course}
-              onChange={(e) =>
-                setNewAttendance({ ...newAttendance, course: e.target.value })
-              }
-              className="border p-2 rounded w-1/3"
-            />
-            <select
-              value={newAttendance.status}
-              onChange={(e) =>
-                setNewAttendance({ ...newAttendance, status: e.target.value })
-              }
-              className="border p-2 rounded w-1/3"
-            >
-              <option value="Present">Present</option>
-              <option value="Absent">Absent</option>
-              <option value="Absent with Apology">Absent with Apology</option>
-            </select>
+
+        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+          <h2 className="text-xl font-semibold text-purple-600 mb-4">
+            Mark Attendance
+          </h2>
+          <form onSubmit={handleMarkAttendance} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={newAttendance.date}
+                  onChange={(e) =>
+                    setNewAttendance({ ...newAttendance, date: e.target.value })
+                  }
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Course
+                </label>
+                <input
+                  type="text"
+                  placeholder="Course"
+                  value={newAttendance.course}
+                  onChange={(e) =>
+                    setNewAttendance({
+                      ...newAttendance,
+                      course: e.target.value,
+                    })
+                  }
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Month
+                </label>
+                <input
+                  type="text"
+                  placeholder="Month"
+                  value={newAttendance.month}
+                  onChange={(e) =>
+                    setNewAttendance({
+                      ...newAttendance,
+                      month: e.target.value,
+                    })
+                  }
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Status
+                </label>
+                <select
+                  value={newAttendance.status}
+                  onChange={(e) =>
+                    setNewAttendance({
+                      ...newAttendance,
+                      status: e.target.value,
+                    })
+                  }
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  required
+                >
+                  <option value="Present">Present</option>
+                  <option value="Absent">Absent</option>
+                  <option value="Absent with apology">
+                    Absent with apology
+                  </option>
+                </select>
+              </div>
+            </div>
             <button
-              onClick={handleMarkAttendance}
-              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+              type="submit"
+              className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
             >
-              <FaPlus className="mr-2" /> Submit
+              <FaPlus className="inline-block mr-2" /> Submit Attendance
             </button>
-          </div>
+          </form>
         </div>
-        <div className="mb-8">{chartData && <Line data={chartData} />}</div>
+
+        <h2 className="text-2xl font-semibold text-purple-600 mb-6">
+          Attendance Records
+        </h2>
+        <div className="space-y-6">
+          {attendanceRecords.map((record) => (
+            <div
+              key={record._id}
+              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-xl font-semibold text-purple-600">
+                    {record.course}
+                  </h3>
+                  <p className="text-gray-600 flex items-center mt-1">
+                    <FaUser className="mr-2" /> {record.student}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {renderStatusIcon(record.status)}
+                  <span className="text-gray-700">{record.status}</span>
+                </div>
+              </div>
+              <p className="text-gray-700 mt-4 flex items-center">
+                <FaCalendarAlt className="mr-2" />{" "}
+                {new Date(record.date).toLocaleDateString()}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

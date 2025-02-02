@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   BsGraphUp,
   BsFileText,
@@ -9,10 +9,18 @@ import {
   BsChatDots,
   BsGear,
 } from "react-icons/bs";
-import logo from "/logo.png"; // Adjust path accordingly
+import { FaSignOutAlt } from "react-icons/fa"; // Logout icon
+import logo from "/g.png"; // Adjust the path to your logo
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(true); // State to manage sidebar open/close
+  const navigate = useNavigate(); // Hook for navigation
+
+  // Logout Functionality
+  const handleLogout = () => {
+    localStorage.removeItem("studentProfile"); // Clear the saved profile
+    navigate("/"); // Redirect to the home page
+  };
 
   return (
     <div
@@ -22,11 +30,23 @@ const Sidebar = () => {
     >
       {/* Logo */}
       <div className="flex justify-center py-4">
-        <img src={logo} alt="Logo" className="w-12 h-12" />
+        <img
+          src={logo}
+          alt="Logo"
+          className={`w-27 h-12 transition-all duration-300 ${
+            !isOpen ? "scale-90" : "scale-100"
+          }`}
+        />
       </div>
 
       {/* Sidebar Title */}
-      <h2 className="text-center text-lg font-semibold mb-6">Student</h2>
+      <h2
+        className={`text-center text-lg font-semibold mb-6 transition-all duration-300 ${
+          !isOpen ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        Student
+      </h2>
 
       {/* Sidebar Navigation */}
       <ul className="space-y-2">
@@ -51,8 +71,8 @@ const Sidebar = () => {
         <SidebarItem
           isOpen={isOpen}
           Icon={BsGraphDown}
-          text="Performance"
-          link="/student/performance"
+          text="Ratings"
+          link="/student/ratings"
         />
         <SidebarItem
           isOpen={isOpen}
@@ -78,6 +98,19 @@ const Sidebar = () => {
           text="Profile"
           link="/student/settings"
         />
+
+        {/* Logout Button */}
+        <li>
+          <button
+            onClick={handleLogout}
+            className={`flex items-center space-x-4 px-4 py-2 w-full hover:bg-white hover:text-indigo-600 rounded-lg transition ${
+              !isOpen ? "justify-center" : ""
+            }`}
+          >
+            <FaSignOutAlt className="text-xl" />
+            {isOpen && <span className="text-base">Logout</span>}
+          </button>
+        </li>
       </ul>
 
       {/* Toggle Button */}
@@ -96,7 +129,9 @@ const SidebarItem = ({ isOpen, Icon, text, link }) => (
   <li>
     <Link
       to={link}
-      className="flex items-center space-x-4 px-4 py-2 hover:bg-white hover:text-indigo-600 rounded-lg transition"
+      className={`flex items-center space-x-4 px-4 py-2 hover:bg-white hover:text-indigo-600 rounded-lg transition ${
+        !isOpen ? "justify-center" : ""
+      }`}
     >
       <Icon className="text-xl" />
       {isOpen && <span className="text-base">{text}</span>}

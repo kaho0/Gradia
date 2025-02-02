@@ -2,27 +2,21 @@ import Attendance from "../models/attendanceSchema.js";
 import { handleValidationError } from "../middlewares/errorHandler.js";
 
 export const createAttendance = async (req, res, next) => {
-  const { attendanceData } = req.body;
+  let { attendanceData } = req.body;
+
   try {
-    if (
-      !attendanceData ||
-      !Array.isArray(attendanceData) ||
-      attendanceData.length === 0
-    ) {
+    if (!attendanceData) {
       return next(
         handleValidationError("Attendance data is missing or invalid!", 400)
       );
     }
 
-    const attendanceRecords = [];
-    for (const record of attendanceData) {
-      try {
-        const newAttendance = await Attendance.create(record);
-        attendanceRecords.push(newAttendance);
-      } catch (error) {
-        console.error("Failed to create attendance record:", error);
-      }
+    // If attendanceData is not an array, convert it into one
+    if (!Array.isArray(attendanceData)) {
+      attendanceData = [attendanceData];
     }
+
+    const attendanceRecords = await Attendance.insertMany(attendanceData);
 
     res.status(201).json({
       success: true,

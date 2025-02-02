@@ -1,30 +1,17 @@
 import { Student } from "../models/studentSchema.js";
 
-export const createStudent = async (req, res) => {
+// Create a new student
+export const createStudent = async (req, res, next) => {
+  console.log("Received data:", req.body);
+
+  const { name, registrationNumber, grade, age, gender, email, profileImage } =
+    req.body;
+
   try {
-    const {
-      name,
-      registrationNumber,
-      grade,
-      age,
-      gender,
-      email,
-      profileImage,
-    } = req.body;
-
     if (!name || !registrationNumber || !grade || !age || !gender || !email) {
-      return res.status(400).json({
-        success: false,
-        message: "Please fill all fields",
-      });
-    }
-
-    const existingStudent = await Student.findOne({ registrationNumber });
-    if (existingStudent) {
-      return res.status(400).json({
-        success: false,
-        message: "Registration Number already exists",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Please fill all fields" });
     }
 
     const student = new Student({
@@ -37,11 +24,12 @@ export const createStudent = async (req, res) => {
       profileImage,
     });
 
-    await student.save();
+    await student.save(); // Ensuring save() is used
+
     res.status(201).json({
       success: true,
       message: "Student created successfully",
-      student,
+      student, // Return created student
     });
   } catch (err) {
     console.error("Error creating student:", err);
@@ -53,13 +41,47 @@ export const createStudent = async (req, res) => {
   }
 };
 
-// ✅ Export getAllStudents properly
-export const getAllStudents = async (req, res) => {
+// Get all students
+export const getAllStudents = async (req, res, next) => {
   try {
     const students = await Student.find();
-    res.status(200).json({ success: true, students });
+    res.status(200).json({
+      success: true,
+      students,
+    });
   } catch (err) {
     console.error("Error fetching students:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: err.message,
+    });
+  }
+};
+export const updateStudent = async (req, res, next) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  try {
+    const student = await Student.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      student,
+    });
+  } catch (err) {
+    console.error("Error updating student:", err);
     res.status(500).json({
       success: false,
       message: "Internal Server Error",
