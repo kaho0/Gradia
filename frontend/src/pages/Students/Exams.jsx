@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import Sidebar from "./Sidebar";
 import axios from "axios";
 import { Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
+import { FaCalendarAlt } from "react-icons/fa";
+import Sidebar from "./Sidebar";
 
 Chart.register(...registerables);
 
@@ -69,16 +70,16 @@ const ExamSection = () => {
     datasets: [
       {
         label: "Exam Duration (mins)",
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
-        borderColor: "#FF6384",
+        backgroundColor: "rgba(100, 149, 237, 0.2)", // Custom color
+        borderColor: "rgb(100, 149, 237)", // Custom color
         fill: true,
         tension: 0.4,
         data: exams.map((exam) => exam.duration || 0),
       },
       {
         label: "Grades",
-        backgroundColor: "rgba(54, 162, 235, 0.5)",
-        borderColor: "#36A2EB",
+        backgroundColor: "rgba(119, 136, 153, 0.2)", // Custom color
+        borderColor: "rgb(119, 136, 153)", // Custom color
         fill: true,
         tension: 0.4,
         data: exams.map((exam) => {
@@ -98,28 +99,28 @@ const ExamSection = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-50 font-poppins">
       {/* Sidebar */}
-      <div className="w-full md:w-1/4 bg-white shadow-md p-5">
-        <Sidebar />
+      <div className="w-1/4 bg-white shadow-lg">
+        <Sidebar></Sidebar>
       </div>
 
       {/* Main Content */}
-      <div className="w-full md:w-3/4 p-4 md:p-8">
-        <h1 className="text-4xl font-bold text-blue-600 mb-6 font-ranch">
-          Exam Results
+      <div className="w-3/4 p-8">
+        <h1 className="text-3xl font-semibold text-blue-500 mb-8">
+          Examination Results
         </h1>
 
         {/* Subject Abbreviations */}
-        <div className="bg-white p-6 shadow-md rounded-lg mb-6">
-          <h2 className="text-lg font-semibold mb-2 font-raleway">
+        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+          <h2 className="text-xl font-semibold text-blue-500 mb-4">
             Subject Abbreviations
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-sm font-raleway">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.values(subjectMap).map((full) => (
               <div
                 key={full}
-                className="p-2 bg-gray-200 rounded-lg text-center"
+                className="p-3 bg-blue-300 rounded-lg text-center text-white"
               >
                 {full}
               </div>
@@ -128,15 +129,15 @@ const ExamSection = () => {
         </div>
 
         {/* Grade Scale */}
-        <div className="bg-white p-6 shadow-md rounded-lg mb-6">
-          <h2 className="text-lg font-semibold mb-2 font-raleway">
+        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+          <h2 className="text-xl font-semibold text-blue-500 mb-4">
             Grade Scale
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm font-raleway">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {Object.entries(gradeMap).map(([grade, range]) => (
               <div
                 key={grade}
-                className="p-2 bg-gray-200 rounded-lg text-center"
+                className="p-3 bg-blue-500 rounded-lg text-center text-white"
               >
                 <strong>{grade}</strong>: {range}
               </div>
@@ -145,70 +146,85 @@ const ExamSection = () => {
         </div>
 
         {/* Sorting */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-4 font-raleway">
-          <label className="text-lg font-semibold">Sort by:</label>
+        <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+          <h2 className="text-xl font-semibold text-blue-500 mb-2 md:mb-0">
+            Sort Records
+          </h2>
           <select
             onChange={(e) => sortData(e.target.value)}
-            className="p-2 border rounded-lg mt-2 md:mt-0"
+            className="w-full md:w-64 p-3 border-2 border-blue-500 rounded-lg text-indigo-500"
           >
             <option value="grade">Grade</option>
-            <option value="duration">Time</option>
+            <option value="duration">Duration</option>
           </select>
         </div>
 
         {/* Table */}
-        <div className="bg-white p-6 shadow-md rounded-lg overflow-x-auto mb-6">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-blue-600 text-white text-lg font-raleway">
+        <div className="bg-white rounded-lg shadow-md mb-8 overflow-x-auto">
+          <table className="w-full min-w-[600px]">
+            <thead className="bg-blue-500 text-white">
+              <tr>
                 {[
                   "Title",
                   "Subject",
                   "Date",
-                  "Duration (mins)",
+                  "Duration",
                   "Teacher",
                   "Grade",
                 ].map((col, index) => (
                   <th
                     key={index}
-                    className="p-3 cursor-pointer hover:bg-blue-500"
+                    className="p-4 text-left cursor-pointer hover:bg-blue-600 transition-colors"
                     onClick={() => sortData(col.toLowerCase())}
                   >
-                    {col}{" "}
-                    {sortColumn === col.toLowerCase() &&
-                      (sortOrder === "asc" ? (
-                        <IoIosArrowUp />
-                      ) : (
-                        <IoIosArrowDown />
-                      ))}
+                    <div className="flex items-center">
+                      {col}
+                      {sortColumn === col.toLowerCase() && (
+                        <span className="ml-2">
+                          {sortOrder === "asc" ? (
+                            <IoIosArrowUp color="#778899" />
+                          ) : (
+                            <IoIosArrowDown color="#778899" />
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="font-raleway">
+            <tbody>
               {exams.length > 0 ? (
                 exams.map((exam) => (
-                  <tr
-                    key={exam._id}
-                    className="border border-gray-300 text-center hover:bg-gray-200 text-m"
-                  >
-                    <td className="p-3">{exam.title || "N/A"}</td>
-                    <td className="p-3">{exam.subject || "N/A"}</td>
-                    <td className="p-3">
-                      {exam.date
-                        ? new Date(exam.date).toLocaleDateString()
-                        : "N/A"}
+                  <tr key={exam._id} className="border-b hover:bg-blue-100">
+                    <td className="p-4 text-indigo-500">
+                      {exam.title || "N/A"}
                     </td>
-                    <td className="p-3">
+                    <td className="p-4 text-indigo-500">
+                      {exam.subject || "N/A"}
+                    </td>
+                    <td className="p-4 text-indigo-500">
+                      <div className="flex items-center">
+                        <FaCalendarAlt className="mr-2" color="#778899" />
+                        {exam.date
+                          ? new Date(exam.date).toLocaleDateString()
+                          : "N/A"}
+                      </div>
+                    </td>
+                    <td className="p-4 text-indigo-500">
                       {exam.duration ? `${exam.duration} mins` : "N/A"}
                     </td>
-                    <td className="p-3">{exam.teacher || "N/A"}</td>
-                    <td className="p-3">{exam.grade || "N/A"}</td>
+                    <td className="p-4 text-indigo-500">
+                      {exam.teacher || "N/A"}
+                    </td>
+                    <td className="p-4 text-indigo-500">
+                      {exam.grade || "N/A"}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="p-3 text-center">
+                  <td colSpan="6" className="p-4 text-center text-indigo-500">
                     No exams available
                   </td>
                 </tr>
@@ -218,15 +234,21 @@ const ExamSection = () => {
         </div>
 
         {/* Line Chart */}
-        <div className="mt-6 bg-white p-6 shadow-md rounded-lg h-96">
-          <h2 className="text-xl font-semibold mb-4 font-raleway">
-            Exam Duration & Grades Graph
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold text-blue-500 mb-6">
+            Performance Overview
           </h2>
-          {exams.length > 0 ? (
-            <Line ref={chartRef} data={lineChartData} options={chartOptions} />
-          ) : (
-            <p className="text-center text-gray-600">No data available</p>
-          )}
+          <div className="h-80 md:h-96">
+            {exams.length > 0 ? (
+              <Line
+                ref={chartRef}
+                data={lineChartData}
+                options={chartOptions}
+              />
+            ) : (
+              <p className="text-center text-indigo-500">No data available</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

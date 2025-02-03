@@ -25,12 +25,15 @@ const AnnouncementSection = () => {
   };
 
   return (
-    <div className="flex">
-      <div className="w-1/4 text-white min-h-screen">
+    <div className="flex min-h-screen bg-gray-50 font-poppins">
+      {/* Sidebar */}
+      <div className="w-1/4 bg-white shadow-lg">
         <Sidebar />
       </div>
-      <div className="w-3/4 p-6 bg-gradient-to-r from-indigo-100 via-gray-100 to-white min-h-screen">
-        <h1 className="text-3xl font-mono font-semibold text-gray-800 mb-8">
+
+      {/* Main Content */}
+      <div className="w-3/4 p-8">
+        <h1 className="text-3xl font-semibold text-blue-500 mb-8">
           Announcements
         </h1>
         <div className="space-y-6">

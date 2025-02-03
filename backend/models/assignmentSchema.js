@@ -21,6 +21,29 @@ const assignmentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  submissions: [
+    {
+      studentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      content: {
+        type: String,
+        required: true,
+      },
+      submittedAt: {
+        type: Date,
+        default: Date.now,
+      },
+      grade: {
+        type: Number,
+        min: 0,
+        max: 100,
+      },
+      feedback: String,
+    },
+  ],
 });
 
 export const Assignment = mongoose.model("Assignment", assignmentSchema);

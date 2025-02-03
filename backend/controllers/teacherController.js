@@ -2,11 +2,12 @@ import { Teacher } from "../models/teacherSchema.js";
 
 // Create a new teacher
 export const createTeacher = async (req, res, next) => {
-  const { name, age, subject, email, hireDate } = req.body;
+  const { name, email, phone, address, qualification, gender, profileImage } = req.body;
 
   try {
     // Validation
-    if (!name || !age || !subject || !email) {
+    console.log(req.body);
+    if (!name || !email || !phone || !address || !qualification || !gender) {
       return res.status(400).json({
         success: false,
         message: "Please fill in all required fields!",
@@ -16,16 +17,18 @@ export const createTeacher = async (req, res, next) => {
     // Create the teacher
     const newTeacher = await Teacher.create({
       name,
-      age,
-      subject,
       email,
-      hireDate,
+      phone,
+      address,
+      qualification,
+      gender,
+      profileImage,
     });
 
     res.status(201).json({
       success: true,
-      message: "Teacher created successfully!",
-      data: newTeacher,
+      message: "Teacher profile created successfully!",
+      teacher: newTeacher,
     });
   } catch (err) {
     if (err.code === 11000) {
@@ -66,7 +69,7 @@ export const getTeacherById = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: teacher,
+      teacher: teacher,
     });
   } catch (err) {
     next(err);
@@ -76,12 +79,28 @@ export const getTeacherById = async (req, res, next) => {
 // Update a teacher's details
 export const updateTeacherById = async (req, res, next) => {
   const { id } = req.params;
-  const { name, age, subject, email, hireDate } = req.body;
+  const { name, email, phone, address, qualification, gender, profileImage } = req.body;
 
   try {
+    // Validation
+    if (!name || !email || !phone || !address || !qualification || !gender) {
+      return res.status(400).json({
+        success: false,
+        message: "Please fill in all required fields!",
+      });
+    }
+
     const updatedTeacher = await Teacher.findByIdAndUpdate(
       id,
-      { name, age, subject, email, hireDate },
+      { 
+        name, 
+        email, 
+        phone, 
+        address, 
+        qualification, 
+        gender, 
+        profileImage 
+      },
       { new: true, runValidators: true }
     );
 
@@ -94,8 +113,8 @@ export const updateTeacherById = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Teacher updated successfully!",
-      data: updatedTeacher,
+      message: "Teacher profile updated successfully!",
+      teacher: updatedTeacher,
     });
   } catch (err) {
     if (err.code === 11000) {

@@ -62,7 +62,6 @@ app.use("/api/v1/exams", examRouter);
 app.use("/api/v1/attendance", attendanceRouter);
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/register", adminRegisterRouter);
-// Add rating routes 👇
 app.use("/api/v1/ratings", ratingRouter); // 👈 Add this line
 
 // Error handling middleware (should be at the bottom)

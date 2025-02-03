@@ -38,17 +38,15 @@ const LibrarySection = () => {
   );
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-gray-50 font-poppins">
       {/* Sidebar */}
-      <div className="w-1/4  text-white min-h-screen">
+      <div className="w-1/4 bg-white shadow-lg">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="w-3/4 p-6 bg-gray-50">
-        <h1 className="text-3xl font-poppins font-semibold text-blue-600 mb-6">
-          Library
-        </h1>
+      <div className="w-3/4 p-8">
+        <h1 className="text-3xl font-semibold text-blue-500 mb-8">Library</h1>
 
         {/* Search and Filter Section */}
         <div className="mb-8 space-y-4">

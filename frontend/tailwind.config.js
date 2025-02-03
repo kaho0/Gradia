@@ -9,6 +9,7 @@ module.exports = {
         roboto: ["Roboto", "sans-serif"],
         poppins: ["Poppins", "sans-serif"],
       },
+      colors: {},
     },
   },
   plugins: [],

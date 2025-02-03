@@ -9,10 +9,13 @@ const StudentSignIn = () => {
 
   const handleSignIn = (e) => {
     e.preventDefault();
-    console.log("Student Sign In:", { email, password });
+    
+    const studentInfo = {
+      email: email,
+    };
+    localStorage.setItem('studentInfo', JSON.stringify(studentInfo));
 
-    // Replace with actual authentication logic
-    navigate("/student/dashboard");
+    navigate("/student/settings");
   };
 
   return (

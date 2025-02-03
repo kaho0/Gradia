@@ -2,7 +2,6 @@ import { Student } from "../models/studentSchema.js";
 
 // Create a new student
 export const createStudent = async (req, res, next) => {
-  console.log("Received data:", req.body);
 
   const { name, registrationNumber, grade, age, gender, email, profileImage } =
     req.body;
@@ -25,6 +24,7 @@ export const createStudent = async (req, res, next) => {
     });
 
     await student.save(); // Ensuring save() is used
+    console.log("Student created successfully:", student);
 
     res.status(201).json({
       success: true,
