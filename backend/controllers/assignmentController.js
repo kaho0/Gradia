@@ -1,197 +1,70 @@
-import { Assignment } from "../models/assignmentSchema.js";
+// controllers/assignmentController.js
+import Assignment from "../models/assignmentSchema.js";
 
-// Add these new controller methods
-export const submitAssignment = async (req, res, next) => {
+import Submission from "../models/submissionSchema.js"; // ✅ Ensure you use default import
+
+// Create a new assignment (teacher action)
+export const createAssignment = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { studentId, content } = req.body;
-
-    // Check if already submitted
-    const assignment = await Assignment.findOne({
-      _id: id,
-      "submissions.studentId": studentId,
-    });
-
-    if (assignment) {
-      return res.status(400).json({
-        success: false,
-        message: "You've already submitted this assignment",
-      });
-    }
-
-    const updated = await Assignment.findByIdAndUpdate(
-      id,
-      {
-        $push: {
-          submissions: {
-            studentId,
-            content,
-          },
-        },
-      },
-      { new: true }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Assignment submitted successfully",
-      assignment: updated,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const getSubmissions = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const assignment = await Assignment.findById(id).populate(
-      "submissions.studentId",
-      "name email"
-    );
-
-    if (!assignment) {
-      return res.status(404).json({
-        success: false,
-        message: "Assignment not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      submissions: assignment.submissions,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// Modify getAllAssignments to include submission status
-export const getAllAssignments = async (req, res, next) => {
-  try {
-    const { studentId } = req.query;
-    let assignments = await Assignment.find().lean();
-
-    if (studentId) {
-      assignments = assignments.map((assignment) => ({
-        ...assignment,
-        submitted: assignment.submissions.some(
-          (sub) => sub.studentId.toString() === studentId
-        ),
-      }));
-    }
-
-    res.status(200).json({
-      success: true,
-      assignments,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// Create the assignment
-export const createAssignment = async (req, res, next) => {
-  try {
-    const { title, description, dueDate, course } = req.body;
-
+    const { title, description, dueDate, course, teacherId } = req.body;
     const assignment = await Assignment.create({
       title,
       description,
       dueDate,
       course,
+      teacherId,
     });
-
-    res.status(201).json({
-      success: true,
-      message: "Assignment created successfully!",
-      assignment,
-    });
-  } catch (err) {
-    next(err);
+    res.status(201).json({ assignment });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
+};
+
+// Get assignments; can be filtered by teacherId or other query params if needed
+export const getAssignments = async (req, res) => {
   try {
-    const assignments = await Assignment.find();
-    res.status(200).json({
-      success: true,
-      assignments,
-    });
-  } catch (err) {
-    next(err);
+    const filter = {};
+    if (req.query.teacherId) filter.teacherId = req.query.teacherId;
+    // For students, you might later add filtering to return only active assignments.
+    const assignments = await Assignment.find(filter);
+    res.json({ assignments });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
 // Get a single assignment by ID
-export const getAssignmentById = async (req, res, next) => {
-  const { id } = req.params;
-
+export const getAssignmentById = async (req, res) => {
   try {
-    const assignment = await Assignment.findById(id);
-
-    if (!assignment) {
-      return res.status(404).json({
-        success: false,
-        message: "Assignment not found!",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      assignment,
-    });
-  } catch (err) {
-    next(err);
+    const assignment = await Assignment.findById(req.params.id);
+    if (!assignment)
+      return res.status(404).json({ message: "Assignment not found" });
+    res.json({ assignment });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Update an assignment
-export const updateAssignment = async (req, res, next) => {
-  const { id } = req.params;
-  const { title, description, dueDate, course } = req.body;
-
+// Submit an assignment (student action)
+// Note: For file handling, ensure you have a middleware (e.g., Multer) to populate req.file.
+export const submitAssignment = async (req, res) => {
   try {
-    const assignment = await Assignment.findByIdAndUpdate(
-      id,
-      { title, description, dueDate, course },
-      { new: true, runValidators: true }
-    );
-
-    if (!assignment) {
-      return res.status(404).json({
-        success: false,
-        message: "Assignment not found!",
-      });
+    const assignmentId = req.params.id;
+    const { studentId, content } = req.body;
+    let fileUrl;
+    if (req.file) {
+      // Adjust the fileUrl based on your file storage strategy.
+      fileUrl = req.file.path;
     }
-
-    res.status(200).json({
-      success: true,
-      message: "Assignment updated successfully!",
-      assignment,
+    const submission = await Submission.create({
+      assignmentId,
+      studentId,
+      content,
+      fileUrl,
+      submittedAt: new Date(),
     });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// Delete an assignment
-export const deleteAssignment = async (req, res, next) => {
-  const { id } = req.params;
-
-  try {
-    const assignment = await Assignment.findByIdAndDelete(id);
-
-    if (!assignment) {
-      return res.status(404).json({
-        success: false,
-        message: "Assignment not found!",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Assignment deleted successfully!",
-    });
-  } catch (err) {
-    next(err);
+    res.status(201).json({ submission });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 };

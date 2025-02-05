@@ -9,8 +9,16 @@ import {
   BsChatDots,
   BsGear,
 } from "react-icons/bs";
-import { FaSignOutAlt } from "react-icons/fa"; // Logout icon
-import logo from "/g.png"; // Adjust the path to your logo
+import {
+  FaSignOutAlt,
+  FaChalkboardTeacher,
+  FaClipboardList,
+  FaBookReader,
+  FaCalendarCheck,
+  FaBullhorn,
+  FaUserCog,
+} from "react-icons/fa"; // Import new icons
+import logo from "/lo.png"; // Adjust the path to your logo
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true); // State to manage sidebar open/close
@@ -33,8 +41,8 @@ const Sidebar = () => {
         <img
           src={logo}
           alt="Logo"
-          className={`w-27 h-12 transition-all duration-300 ${
-            !isOpen ? "scale-90" : "scale-100"
+          className={`transition-all duration-300 ${
+            !isOpen ? "w-10 h-10" : "w-26 h-12"
           }`}
         />
       </div>
@@ -52,19 +60,19 @@ const Sidebar = () => {
       <ul className="space-y-2">
         <SidebarItem
           isOpen={isOpen}
-          Icon={BsGraphUp}
+          Icon={FaChalkboardTeacher}
           text="Dashboard"
           link="/student/dashboard"
         />
         <SidebarItem
           isOpen={isOpen}
-          Icon={BsFileText}
+          Icon={FaClipboardList}
           text="Assignments"
           link="/student/assignments"
         />
         <SidebarItem
           isOpen={isOpen}
-          Icon={BsBook}
+          Icon={FaBookReader}
           text="Exams"
           link="/student/exams"
         />
@@ -76,7 +84,7 @@ const Sidebar = () => {
         />
         <SidebarItem
           isOpen={isOpen}
-          Icon={BsCalendar}
+          Icon={FaCalendarCheck}
           text="Attendance"
           link="/student/attendance"
         />
@@ -88,13 +96,13 @@ const Sidebar = () => {
         />
         <SidebarItem
           isOpen={isOpen}
-          Icon={BsChatDots}
+          Icon={FaBullhorn}
           text="Announcements"
           link="/student/communication"
         />
         <SidebarItem
           isOpen={isOpen}
-          Icon={BsGear}
+          Icon={FaUserCog}
           text="Profile"
           link="/student/settings"
         />
