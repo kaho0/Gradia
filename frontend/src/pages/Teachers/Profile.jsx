@@ -1,10 +1,13 @@
-// TeacherProfileSection.js
-import React, { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import { ProfileContainer, SidebarContainer, Content, ProfileHeader, ProfileDetails, ProfileLabel, ProfileInfo, EditButton } 
-from '../../styles/SettingsProfileStyles'; 
-import { FaEnvelope, FaPhone, FaUser, FaBook, FaVenusMars } from 'react-icons/fa';
-import { toast } from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import Sidebar from "./Sidebar";
+import {
+  FaPhone,
+  FaEnvelope,
+  FaUser,
+  FaBook,
+  FaVenusMars,
+} from "react-icons/fa";
+import toast, { Toaster } from "react-hot-toast";
 
 const TeacherProfileSection = () => {
   const [teacherProfile, setTeacherProfile] = useState({
@@ -14,13 +17,13 @@ const TeacherProfileSection = () => {
     address: "",
     qualification: "",
     gender: "",
-    profileImage: "https://avatar.iran.liara.run/public/boy",
+    profileImage: "https://avatar.iran.liara.run/public/boy", // Default to male avatar
   });
 
   const [submittedProfile, setSubmittedProfile] = useState(null);
 
   useEffect(() => {
-    // First check if there's an existing profile
+    // Check for existing profile first
     const savedProfile = localStorage.getItem("teacherProfile");
     if (savedProfile) {
       setSubmittedProfile(JSON.parse(savedProfile));
@@ -28,9 +31,9 @@ const TeacherProfileSection = () => {
       // If no profile exists, get email from teacherInfo
       const teacherInfo = JSON.parse(localStorage.getItem("teacherInfo"));
       if (teacherInfo?.email) {
-        setTeacherProfile(prev => ({
+        setTeacherProfile((prev) => ({
           ...prev,
-          email: teacherInfo.email
+          email: teacherInfo.email,
         }));
       }
     }
@@ -38,17 +41,21 @@ const TeacherProfileSection = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setTeacherProfile(prev => ({
+    setTeacherProfile((prev) => ({
       ...prev,
       [name]: value,
-      profileImage: name === "gender" ? 
-        `https://avatar.iran.liara.run/public/${value === "Female" ? "girl" : "boy"}` : 
-        prev.profileImage
+      profileImage:
+        name === "gender"
+          ? `https://avatar.iran.liara.run/public/${
+              value === "Female" ? "girl" : "boy"
+            }`
+          : prev.profileImage,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     fetch("http://localhost:4000/api/v1/teachers/", {
       method: "POST",
       headers: {
@@ -59,38 +66,45 @@ const TeacherProfileSection = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
+          // Store the complete teacher data including _id from the response
+          console.log("Teacher created successfully:", data.teacher);
           localStorage.setItem(
             "teacherProfile",
-            JSON.stringify(data.teacher)
+            JSON.stringify(data.teacher) // Store the complete teacher object from response
           );
-          setSubmittedProfile(data.teacher);
-          toast.success('Profile created successfully! 🎉', {
+          setSubmittedProfile(data.teacher); // Use the response data
+          toast.success("Profile created successfully! 🎉", {
             duration: 3000,
-            position: 'top-center',
+            position: "top-center",
+            style: {
+              background: "#4CAF50",
+              color: "#fff",
+              borderRadius: "10px",
+              padding: "16px",
+            },
           });
         } else {
-          toast.error(data.message || 'Error saving profile.');
+          toast.error(data.message || "Error saving profile.");
         }
       })
       .catch((err) => {
         console.error("Error submitting teacher data:", err);
-        toast.error('Something went wrong. Please try again.');
+        toast.error("Something went wrong. Please try again.");
       });
   };
 
   const handleEdit = () => {
-    setTeacherProfile({
-      ...submittedProfile,
-      _id: submittedProfile._id  // Preserve the ID for update
-    });
+    // Pre-fill the form with existing profile data
+    setTeacherProfile(submittedProfile);
     setSubmittedProfile(null);
   };
 
   const handleUpdate = (e) => {
     e.preventDefault();
-    console.log("Updating profile with ID:", teacherProfile._id);
 
-    fetch(`http://localhost:4000/api/v1/teachers/${teacherProfile._id}`, {
+    const teacherId = teacherProfile._id;
+
+    fetch(`http://localhost:4000/api/v1/teachers/${teacherId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -102,31 +116,18 @@ const TeacherProfileSection = () => {
         if (data.success) {
           localStorage.setItem("teacherProfile", JSON.stringify(data.teacher));
           setSubmittedProfile(data.teacher);
-          toast.success('Profile updated successfully! 🎉', {
+          toast.success("Profile updated successfully! 🎉", {
             duration: 3000,
-            position: 'top-center',
+            position: "top-center",
           });
         } else {
-          toast.error(data.message || 'Error updating profile.');
+          toast.error(data.message || "Error updating profile.");
         }
       })
       .catch((err) => {
         console.error("Error updating teacher data:", err);
-        toast.error('Something went wrong. Please try again.');
+        toast.error("Something went wrong. Please try again.");
       });
-  };
-
-  const handleCancel = () => {
-    setTeacherProfile({
-      name: "",
-      email: teacherProfile.email,
-      phone: "",
-      address: "",
-      qualification: "",
-      gender: "",
-      profileImage: "https://avatar.iran.liara.run/public/boy",
-    });
-    setSubmittedProfile(JSON.parse(localStorage.getItem("teacherProfile")));
   };
 
   return (
@@ -157,51 +158,65 @@ const TeacherProfileSection = () => {
                 </p>
               </div>
 
-              {/* Contact Information */}
-              <div className="space-y-6 mb-8">
-                <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl">
+              {/* Stats Section */}
+              <div className="grid grid-cols-3 gap-6 mb-10">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl text-center transform transition-all duration-300 hover:shadow-lg">
+                  <FaUser className="text-blue-600 text-2xl mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-blue-900">
+                    {submittedProfile.phone}
+                  </p>
+                  <p className="text-blue-600 text-sm uppercase tracking-wider">
+                    Phone
+                  </p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl text-center transform transition-all duration-300 hover:shadow-lg">
+                  <FaBook className="text-purple-600 text-2xl mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-purple-900">
+                    {submittedProfile.qualification}
+                  </p>
+                  <p className="text-purple-600 text-sm uppercase tracking-wider">
+                    Qualification
+                  </p>
+                </div>
+                <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-2xl text-center transform transition-all duration-300 hover:shadow-lg">
+                  <FaVenusMars className="text-pink-600 text-2xl mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-pink-900 capitalize">
+                    {submittedProfile.gender}
+                  </p>
+                  <p className="text-pink-600 text-sm uppercase tracking-wider">
+                    Gender
+                  </p>
+                </div>
+              </div>
+
+              {/* Contact Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                  Contact Information
+                </h3>
+                <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl transform transition-all duration-300 hover:shadow-md">
                   <div className="bg-blue-100 p-3 rounded-full">
                     <FaEnvelope className="text-blue-600 text-xl" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="text-gray-700">{submittedProfile.email}</p>
-                  </div>
+                  <a
+                    href={`mailto:${submittedProfile.email}`}
+                    className="ml-4 text-gray-700 hover:text-blue-600 transition-colors duration-300"
+                  >
+                    {submittedProfile.email}
+                  </a>
                 </div>
-
-                <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl">
+                <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl transform transition-all duration-300 hover:shadow-md">
                   <div className="bg-green-100 p-3 rounded-full">
                     <FaPhone className="text-green-600 text-xl" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p className="text-gray-700">{submittedProfile.phone}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl">
-                  <div className="bg-purple-100 p-3 rounded-full">
-                    <FaUser className="text-purple-600 text-xl" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-gray-500">Address</p>
-                    <p className="text-gray-700">{submittedProfile.address}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl">
-                  <div className="bg-yellow-100 p-3 rounded-full">
-                    <FaBook className="text-yellow-600 text-xl" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm text-gray-500">Qualification</p>
-                    <p className="text-gray-700">{submittedProfile.qualification}</p>
-                  </div>
+                  <span className="ml-4 text-gray-700">
+                    {submittedProfile.phone}
+                  </span>
                 </div>
               </div>
 
               {/* Edit Button */}
-              <button 
+              <button
                 className="w-full mt-8 bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-700 hover:to-blue-900 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 onClick={handleEdit}
               >
@@ -213,15 +228,17 @@ const TeacherProfileSection = () => {
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-blue-900">
-                {teacherProfile._id ? 'Edit Your Profile' : 'Complete Your Profile'}
+                {teacherProfile._id
+                  ? "Edit Your Profile"
+                  : "Complete Your Profile"}
               </h2>
               <p className="text-gray-600 mt-2">
-                {teacherProfile._id 
-                  ? 'Update your information below'
-                  : 'Tell us more about yourself to personalize your experience'}
+                {teacherProfile._id
+                  ? "Update your information below"
+                  : "Tell us more about yourself to personalize your experience"}
               </p>
             </div>
-            
+
             <form
               onSubmit={teacherProfile._id ? handleUpdate : handleSubmit}
               className="bg-white shadow-2xl rounded-3xl p-8 backdrop-blur-lg backdrop-filter"
@@ -244,13 +261,13 @@ const TeacherProfileSection = () => {
                     type: "tel",
                   },
                   {
-                    field: "qualification",
-                    icon: <FaBook className="text-blue-500" />,
+                    field: "address",
+                    icon: <FaUser className="text-blue-500" />,
                     type: "text",
                   },
                   {
-                    field: "address",
-                    icon: <FaUser className="text-blue-500" />,
+                    field: "qualification",
+                    icon: <FaBook className="text-blue-500" />,
                     type: "text",
                   },
                   {
@@ -277,7 +294,7 @@ const TeacherProfileSection = () => {
                           required
                         >
                           <option value="">Select {field}</option>
-                          {options.map(opt => (
+                          {options.map((opt) => (
                             <option key={opt} value={opt}>
                               {opt}
                             </option>
@@ -304,13 +321,24 @@ const TeacherProfileSection = () => {
                 type="submit"
                 className="w-full mt-6 bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-700 hover:to-blue-900 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                {teacherProfile._id ? 'Update Profile' : 'Complete Profile'}
+                {teacherProfile._id ? "Update Profile" : "Complete Profile"}
               </button>
 
               {teacherProfile._id && (
                 <button
                   type="button"
-                  onClick={handleCancel}
+                  onClick={() => {
+                    setTeacherProfile({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      address: "",
+                      qualification: "",
+                      gender: "",
+                      profileImage: "https://avatar.iran.liara.run/public/boy",
+                    });
+                    setSubmittedProfile(null);
+                  }}
                   className="w-full mt-4 bg-gray-100 text-gray-700 py-3 px-6 rounded-xl font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
                 >
                   Cancel

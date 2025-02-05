@@ -3,7 +3,6 @@ import axios from "axios";
 import Sidebar from "./Sidebar";
 
 const CheckAttendanceSection = () => {
-  const [students, setStudents] = useState([]);
   const [attendanceData, setAttendanceData] = useState([]);
 
   useEffect(() => {
@@ -18,13 +17,6 @@ const CheckAttendanceSection = () => {
       );
       const fetchedAttendanceData = attendanceResponse.data.data;
 
-      // Fetch students separately
-      const studentsResponse = await axios.get(
-        "http://localhost:4000/api/v1/students/getall"
-      );
-      const fetchedStudents = studentsResponse.data.students;
-
-      setStudents(fetchedStudents);
       setAttendanceData(fetchedAttendanceData);
     } catch (error) {
       console.error("Error fetching attendance data:", error);
@@ -47,52 +39,35 @@ const CheckAttendanceSection = () => {
 
           {/* Attendance List */}
           <div>
-            {students.length > 0 ? (
-              students.map((student, index) => {
-                const attendanceRecord = attendanceData.find(
-                  (record) => record.student === student._id // Matching by correct field
-                );
-
-                return (
-                  <div
-                    key={student._id || index} // Ensuring a unique key
-                    className="flex items-center justify-between p-4 border-b"
-                  >
-                    <span className="text-lg font-medium">{student.name}</span>
-                    <div className="flex space-x-4">
-                      <span
-                        className={`px-4 py-2 rounded-md ${
-                          attendanceRecord?.status === "Present"
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-200"
-                        }`}
-                      >
-                        Present
-                      </span>
-                      <span
-                        className={`px-4 py-2 rounded-md ${
-                          attendanceRecord?.status === "Absent"
-                            ? "bg-red-500 text-white"
-                            : "bg-gray-200"
-                        }`}
-                      >
-                        Absent
-                      </span>
-                      <span
-                        className={`px-4 py-2 rounded-md ${
-                          attendanceRecord?.status === "Absent with apology"
-                            ? "bg-yellow-500 text-white"
-                            : "bg-gray-200"
-                        }`}
-                      >
-                        Absent with apology
-                      </span>
-                    </div>
+            {attendanceData.length > 0 ? (
+              attendanceData.map((record, index) => (
+                <div
+                  key={record._id || index} // Unique key for each record
+                  className="flex items-center justify-between p-4 border-b"
+                >
+                  <span className="text-lg font-medium">
+                    {/* Displaying student name */}
+                    {record.student || "No name available"}
+                  </span>
+                  <div className="flex space-x-4">
+                    <span
+                      className={`px-4 py-2 rounded-md ${
+                        record.status === "Present"
+                          ? "bg-green-500 text-white" // Green for Present
+                          : record.status === "Absent"
+                          ? "bg-red-500 text-white" // Red for Absent
+                          : record.status === "Absent with apology"
+                          ? "bg-yellow-300 text-black" // Yellow for Absent with apology
+                          : "bg-gray-200 text-black" // Default color for any other status
+                      }`}
+                    >
+                      {record.status}
+                    </span>
                   </div>
-                );
-              })
+                </div>
+              ))
             ) : (
-              <p>No students found.</p>
+              <p>No attendance records found.</p>
             )}
           </div>
         </div>
