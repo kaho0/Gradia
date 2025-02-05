@@ -1,148 +1,147 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Link } from 'react-router-dom'; 
-import { BsGraphUp, BsPeople, BsPerson, BsFileText, BsBook, BsGraphDown, BsCalendar, BsGear, BsChatDots, BsCalendarEvent, BsQuestionSquare } from 'react-icons/bs';
-
-const SidebarContainer = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: ${({ isOpen }) => (isOpen ? '250px' : '80px')};
-  width: 250px;
-  height: 100%;
-  background-color: #2c3e50; /* Dark blue background */
-  color: white;
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding-top: 60px;
-  transition: width 0.3s ease; /* Smooth width transition */
-  z-index: 100; /* Ensure sidebar stays above content */
-`;
-
-const SidebarHeader = styled.div`
-  padding: 20px;
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
-`;
-
-const SidebarNav = styled.ul`
-  list-style: none;
-  padding: 0;
-`;
-
-const SidebarNavItem = styled.li`
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-  font-size: 18px;
-  border-bottom: 1px solid #34495e; /* Darker border */
-  transition: background-color 0.3s ease;
-  &:hover {
-    background-color: #34495e; /* Darker background on hover */
-  }
-`;
-
-const StyledLink = styled(Link)`
-  text-decoration: none;
-  color: white;
-  margin-left: 10px;
-`;
-
-const SidebarIcon = styled.div`
-  margin-right: 10px;
-`;
-
-const Logo = styled.img`
-  width: 50px;
-  height: auto;
-`;
-
-const ToggleButton = styled.div`
-  position: absolute;
-  top: 20px;
-  right: 0;
-  width: 30px;
-  height: 30px;
-  background-color: #34495e; /* Darker background */
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ToggleIcon = styled.span`
-  color: white;
-  font-size: 20px;
-  transform: ${({ isOpen }) => (isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
-  transition: transform 0.3s ease;
-`;
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FaSignOutAlt,
+  FaChalkboardTeacher,
+  FaClipboardList,
+  FaBookReader,
+  FaCalendarCheck,
+  FaBullhorn,
+  FaUserCog,
+} from "react-icons/fa"; // Import new icons
+import logo from "/lo.png"; // Adjust the path to your logo
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(true); // State to manage sidebar open/close
+  const navigate = useNavigate(); // Hook for navigation
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
+  // Logout Functionality
+  const handleLogout = () => {
+    localStorage.removeItem("studentProfile"); // Clear the saved profile
+    navigate("/"); // Redirect to the home page
   };
-   
+
   return (
-    <SidebarContainer style={{ width: isOpen ? '250px' : '80px' }}>
-        <SidebarHeader>
-        <Logo src={"../assets/bg1.png"} alt="Logo" />
-      </SidebarHeader>
-      <SidebarHeader>Teacher</SidebarHeader>
-      <SidebarNav>
-        <SidebarNavItem>
-          <SidebarIcon><BsGraphUp /></SidebarIcon>
-          <StyledLink to="/teacher/dashboard">Dashboard</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsPeople /></SidebarIcon>
-          <StyledLink to="/teacher/classes">Classes</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsPeople /></SidebarIcon>
-          <StyledLink to="/teacher/students">Students</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsPerson /></SidebarIcon>
-          <StyledLink to="/teacher/teachers">Teachers</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsFileText /></SidebarIcon>
-          <StyledLink to="/teacher/assignments">Assignments</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsBook /></SidebarIcon>
-          <StyledLink to="/teacher/exams">Exams</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsGraphDown /></SidebarIcon>
-          <StyledLink to="/teacher/performance">Performance</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsCalendar /></SidebarIcon>
-          <StyledLink to="/teacher/attendance">Attendance</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsChatDots /></SidebarIcon>
-          <StyledLink to="/teacher/communication">Announcement</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsCalendarEvent /></SidebarIcon>
-          <StyledLink to="/teacher/events">Events & Calendar</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsGear /></SidebarIcon>
-          <StyledLink to="/teacher/settings">Settings & Profile</StyledLink>
-        </SidebarNavItem>
-        
-      </SidebarNav>
-      <ToggleButton onClick={toggleSidebar}>
-        <ToggleIcon isOpen={isOpen}>▲</ToggleIcon>
-      </ToggleButton>
-    </SidebarContainer>
+    <div
+      className={`h-screen fixed top-0 left-0 transition-all duration-300 
+      ${isOpen ? "w-64" : "w-20"} 
+      bg-gradient-to-b from-blue-900 to-purple-900 shadow-lg text-white`}
+    >
+      {/* Logo */}
+      <div className="flex justify-center py-4">
+        <img
+          src={logo}
+          alt="Logo"
+          className={`transition-all duration-300 ${
+            !isOpen ? "w-10 h-10" : "w-26 h-12"
+          }`}
+        />
+      </div>
+
+      {/* Sidebar Title */}
+      <h2
+        className={`text-center text-lg font-semibold mb-6 transition-all duration-300 ${
+          !isOpen ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        Teacher
+      </h2>
+
+      {/* Sidebar Navigation */}
+      <ul className="space-y-2">
+        <SidebarItem
+          isOpen={isOpen}
+          Icon={FaChalkboardTeacher}
+          text="Dashboard"
+          link="/teacher/dashboard"
+        />
+        <SidebarItem
+          isOpen={isOpen}
+          Icon={FaClipboardList}
+          text="Classes"
+          link="/teacher/classes"
+        />
+        <SidebarItem
+          isOpen={isOpen}
+          Icon={FaClipboardList}
+          text="Students"
+          link="/teacher/students"
+        />
+        <SidebarItem
+          isOpen={isOpen}
+          Icon={FaChalkboardTeacher}
+          text="Teachers"
+          link="/teacher/teachers"
+        />
+        <SidebarItem
+          isOpen={isOpen}
+          Icon={FaClipboardList}
+          text="Assignments"
+          link="/teacher/assignments"
+        />
+        <SidebarItem
+          isOpen={isOpen}
+          Icon={FaBookReader}
+          text="Submissions"
+          link="/teacher/submissions"
+        />
+        <SidebarItem
+          isOpen={isOpen}
+          Icon={FaCalendarCheck}
+          text="Attendance"
+          link="/teacher/attendance"
+        />
+        <SidebarItem
+          isOpen={isOpen}
+          Icon={FaBullhorn}
+          text="Announcement"
+          link="/teacher/announcements"
+        />
+        <SidebarItem
+          isOpen={isOpen}
+          Icon={FaUserCog}
+          text="Settings & Profile"
+          link="/teacher/settings"
+        />
+
+        {/* Logout Button */}
+        <li>
+          <button
+            onClick={handleLogout}
+            className={`flex items-center space-x-4 px-4 py-2 w-full hover:bg-white hover:text-indigo-600 rounded-lg transition ${
+              !isOpen ? "justify-center" : ""
+            }`}
+          >
+            <FaSignOutAlt className="text-xl" />
+            {isOpen && <span className="text-base">Logout</span>}
+          </button>
+        </li>
+      </ul>
+
+      {/* Toggle Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white text-indigo-600 p-2 rounded-full shadow-md hover:bg-gray-100 transition"
+      >
+        {isOpen ? "◀" : "▶"}
+      </button>
+    </div>
   );
 };
+
+// Sidebar Item Component
+const SidebarItem = ({ isOpen, Icon, text, link }) => (
+  <li>
+    <Link
+      to={link}
+      className={`flex items-center space-x-4 px-4 py-2 hover:bg-white hover:text-indigo-600 rounded-lg transition ${
+        !isOpen ? "justify-center" : ""
+      }`}
+    >
+      <Icon className="text-xl" />
+      {isOpen && <span className="text-base">{text}</span>}
+    </Link>
+  </li>
+);
 
 export default Sidebar;

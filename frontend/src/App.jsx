@@ -72,7 +72,7 @@ const App = () => {
         <Route exact path="/admin/students" element={<Students />} />
         <Route exact path="/admin/assignments" element={<Assignments />} />
         <Route exact path="/admin/library" element={<Library />} />
-        <Route exact path="/admin/communication" element={<Announcement />} />
+        <Route exact path="/admin/announcements" element={<Announcement />} />
         <Route exact path="/admin/events" element={<EventCalender />} />
         <Route exact path="/admin/settings" element={<SettingsProfile />} />
 
@@ -97,7 +97,7 @@ const App = () => {
         <Route exact path="/student/library" element={<LibrarySection />} />
         <Route
           exact
-          path="/student/communication"
+          path="/student/announcements"
           element={<AnnouncementSection />}
         />
         <Route exact path="/student/settings" element={<ProfileSection />} />
@@ -124,7 +124,7 @@ const App = () => {
         />
         <Route
           exact
-          path="/teacher/communication"
+          path="/teacher/announcements"
           element={<CheckAnnouncementSection />}
         />
         <Route exact path="/teacher/events" element={<EventSection />} />
