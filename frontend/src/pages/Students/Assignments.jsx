@@ -1,35 +1,63 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+import { FaPaperPlane } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 
 const StudentAssignments = () => {
   const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [newSubmission, setNewSubmission] = useState({
+    assignmentId: "",
+    student: "",
+    content: "",
+  });
   const [file, setFile] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
+  const [allSubmissions, setAllSubmissions] = useState([]); // New state
 
   useEffect(() => {
     fetchAssignments();
+    fetchAllSubmissions(); // Fetch all submissions when the component mounts
   }, []);
 
   const fetchAssignments = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/v1/assignments/getall",
-        {
-          params: { studentId: localStorage.getItem("studentId") },
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
+        "http://localhost:4000/api/v1/assignments/getall"
       );
-
-      // Ensure assignments is always an array
-      setAssignments(response.data?.assignments || []);
+      setAssignments(response.data.assignments || []);
     } catch (error) {
-      toast.error("Failed to load assignments");
-      setAssignments([]); // Fallback to an empty array
+      console.error("Error fetching assignments:", error);
+      Swal.fire("Error!", "Failed to load assignments.", "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch submissions for the selected assignment
+  const fetchSubmissions = async (assignmentId) => {
+    if (!assignmentId) return;
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/v1/assignment/${assignmentId}`
+      );
+      setSubmissions(response.data.submissions || []);
+    } catch (error) {
+      console.error("Error fetching submissions:", error);
+    }
+  };
+
+  // New: Fetch all submissions regardless of the assignment
+  const fetchAllSubmissions = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/api/v1/submissions/getall"
+      );
+      setAllSubmissions(response.data.submissions || []);
+    } catch (error) {
+      console.error("Error fetching all submissions:", error);
     }
   };
 
@@ -37,224 +65,228 @@ const StudentAssignments = () => {
     setFile(e.target.files[0]);
   };
 
-  const handleSubmission = async (assignmentId, submissionContent) => {
-    if (!file && !submissionContent.trim()) {
-      toast.warning("Please add a file or text submission");
+  const handleAssignmentSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!newSubmission.assignmentId) {
+      Swal.fire("Error!", "Please select an assignment.", "error");
+      return;
+    }
+    if (!newSubmission.student.trim()) {
+      Swal.fire("Error!", "Please enter your name.", "error");
+      return;
+    }
+    if (!newSubmission.content.trim() && !file) {
+      Swal.fire(
+        "Error!",
+        "Please enter submission text or attach a file.",
+        "error"
+      );
       return;
     }
 
-    const formData = new FormData();
-    formData.append("studentId", localStorage.getItem("studentId"));
-    formData.append("content", submissionContent);
-    if (file) formData.append("submissionFile", file);
+    const result = await Swal.fire({
+      title: "Submit Assignment?",
+      text: "Are you sure you want to submit this assignment?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#6d28d9",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, submit it!",
+    });
 
-    try {
-      const response = await axios.post(
-        `http://localhost:4000/api/v1/assignments/${assignmentId}/submit`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+    if (result.isConfirmed) {
+      try {
+        const formData = new FormData();
+        formData.append("student", newSubmission.student);
+        formData.append("content", newSubmission.content);
+        if (file) formData.append("submissionFile", file);
 
-      setAssignments((prev) =>
-        prev.map((assignment) =>
-          assignment._id === assignmentId
-            ? {
-                ...assignment,
-                submitted: true,
-                submissions: response.data.assignment.submissions,
-              }
-            : assignment
-        )
-      );
-      toast.success("Assignment submitted successfully!");
-      setFile(null);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Submission failed");
+        await axios.post(
+          `http://localhost:4000/api/v1/assignments/${newSubmission.assignmentId}/submit`,
+          formData,
+          {
+            headers: {
+              // When sending FormData, you usually do not need to set the Content-Type header manually.
+              // Let the browser set it (including boundary) automatically.
+              // "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        Swal.fire("Success!", "Assignment submitted successfully.", "success");
+        // Clear form fields
+        setNewSubmission({ assignmentId: "", student: "", content: "" });
+        setFile(null);
+        fetchSubmissions(newSubmission.assignmentId);
+        fetchAllSubmissions(); // Refresh all submissions
+      } catch (error) {
+        console.error("Error submitting assignment:", error);
+        Swal.fire("Error!", "Submission failed. Please try again.", "error");
+      }
     }
   };
 
-  if (loading)
-    return <p className="text-center py-8">Loading assignments...</p>;
-
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 p-8 ml-64">
-        <ToastContainer position="top-center" />
-        <h1 className="text-3xl font-bold mb-8 text-gray-800">
-          Your Assignments
+    <div className="flex min-h-screen bg-gray-50 font-poppins">
+      <div className="w-1/4 bg-white shadow-lg">
+        <Sidebar />
+      </div>
+
+      <div className="w-3/4 p-8">
+        <h1 className="text-3xl font-semibold text-purple-600 mb-8">
+          Student Assignments
         </h1>
 
-        <div className="space-y-6">
-          {assignments.length > 0 ? (
-            assignments.map((assignment) => (
-              <AssignmentCard
-                key={assignment._id}
-                assignment={assignment}
-                onSubmission={handleSubmission}
-                onFileChange={handleFileChange}
+        {/* Assignment Submission Form */}
+        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+          <h2 className="text-xl font-semibold text-purple-600 mb-4">
+            Submit Assignment
+          </h2>
+          <form onSubmit={handleAssignmentSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <select
+                value={newSubmission.assignmentId}
+                onChange={(e) => {
+                  const assignmentId = e.target.value;
+                  setNewSubmission({
+                    ...newSubmission,
+                    assignmentId,
+                  });
+                  fetchSubmissions(assignmentId);
+                }}
+                className="w-full p-3 border rounded-lg"
+                required
+              >
+                <option value="">Select Assignment</option>
+                {assignments.map((assignment) => (
+                  <option key={assignment._id} value={assignment._id}>
+                    {assignment.title}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="text"
+                placeholder="Your Name"
+                value={newSubmission.student}
+                onChange={(e) =>
+                  setNewSubmission({
+                    ...newSubmission,
+                    student: e.target.value,
+                  })
+                }
+                className="w-full p-3 border rounded-lg"
+                required
               />
-            ))
-          ) : (
-            <div className="text-gray-500 text-center py-8">
-              No assignments found
+
+              <textarea
+                placeholder="Enter your submission text..."
+                value={newSubmission.content}
+                onChange={(e) =>
+                  setNewSubmission({
+                    ...newSubmission,
+                    content: e.target.value,
+                  })
+                }
+                className="w-full p-3 border rounded-lg"
+                rows="3"
+              />
+
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="w-full p-3 border rounded-lg"
+              />
             </div>
-          )}
+
+            <button
+              type="submit"
+              className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700"
+            >
+              <FaPaperPlane className="inline-block mr-2" /> Submit Assignment
+            </button>
+          </form>
         </div>
-      </div>
-    </div>
-  );
-};
 
-const AssignmentCard = ({ assignment, onSubmission, onFileChange }) => {
-  const [submissionContent, setSubmissionContent] = useState("");
-  const [file, setFile] = useState(null);
-  const isPastDue = new Date(assignment?.dueDate) < new Date();
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isPastDue) {
-      toast.error("This assignment is past due date");
-      return;
-    }
-    onSubmission(assignment._id, submissionContent);
-  };
-
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-xl font-semibold text-gray-800">
-            {assignment?.title || "Untitled Assignment"}
-          </h3>
-          <p className="text-gray-600 mt-2">
-            {assignment?.description || "No description available"}
-          </p>
-          <div className="mt-4 space-y-1 text-sm">
-            <p className="text-gray-500">
-              Due:{" "}
-              {assignment?.dueDate
-                ? new Date(assignment.dueDate).toLocaleDateString()
-                : "No due date"}
-            </p>
-            <p className="text-gray-500">
-              Course: {assignment?.course?.name || "No course specified"}
-            </p>
-            <p className="text-gray-500">
-              Instructor: {assignment?.instructor?.name || "Unknown instructor"}
-            </p>
+        {/* Display submissions for the selected assignment */}
+        <h2 className="text-2xl font-semibold text-purple-600 mb-6">
+          Your Submissions for Selected Assignment
+        </h2>
+        {submissions.length > 0 ? (
+          <div className="space-y-4 mb-8">
+            {submissions.map((submission) => (
+              <div
+                key={submission._id}
+                className="bg-white p-4 rounded-lg shadow-md"
+              >
+                <p>
+                  <strong>Student:</strong> {submission.student}
+                </p>
+                <p>
+                  <strong>Content:</strong>{" "}
+                  {submission.content || "No text submitted"}
+                </p>
+                {submission.fileUrl && (
+                  <p>
+                    <strong>File:</strong>{" "}
+                    <a
+                      href={submission.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500"
+                    >
+                      View File
+                    </a>
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
-        </div>
-        <StatusBadge submitted={assignment?.submitted} pastDue={isPastDue} />
+        ) : (
+          <p>No submissions found for the selected assignment.</p>
+        )}
+
+        {/* Display all submissions */}
+        <h2 className="text-2xl font-semibold text-purple-600 mb-6">
+          All Submissions
+        </h2>
+        {allSubmissions.length > 0 ? (
+          <div className="space-y-4">
+            {allSubmissions.map((submission) => (
+              <div
+                key={submission._id}
+                className="bg-white p-4 rounded-lg shadow-md"
+              >
+                <p>
+                  <strong>Student:</strong> {submission.student}
+                </p>
+                <p>
+                  <strong>Content:</strong>{" "}
+                  {submission.content || "No text submitted"}
+                </p>
+                {submission.fileUrl && (
+                  <p>
+                    <strong>File:</strong>{" "}
+                    <a
+                      href={submission.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500"
+                    >
+                      View File
+                    </a>
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No submissions found.</p>
+        )}
       </div>
-
-      {assignment?.submitted ? (
-        <SubmissionDetails submission={assignment?.submissions?.[0]} />
-      ) : (
-        <SubmissionForm
-          onSubmit={handleSubmit}
-          content={submissionContent}
-          onContentChange={setSubmissionContent}
-          onFileChange={(e) => {
-            onFileChange(e);
-            setFile(e.target.files[0]);
-          }}
-          file={file}
-          disabled={isPastDue}
-        />
-      )}
     </div>
   );
 };
-
-const StatusBadge = ({ submitted, pastDue }) => {
-  if (submitted) {
-    return (
-      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-        Submitted
-      </span>
-    );
-  }
-  if (pastDue) {
-    return (
-      <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-        Past Due
-      </span>
-    );
-  }
-  return (
-    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
-      Pending
-    </span>
-  );
-};
-
-const SubmissionDetails = ({ submission }) => (
-  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-    <h4 className="font-medium text-gray-700 mb-2">Your Submission</h4>
-    {submission?.content && (
-      <p className="text-gray-600 mb-4">{submission.content}</p>
-    )}
-    {submission?.fileUrl && (
-      <a
-        href={submission.fileUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:underline"
-      >
-        Download Submitted File
-      </a>
-    )}
-    <div className="mt-4 text-sm text-gray-500">
-      Submitted on:{" "}
-      {submission?.submittedAt
-        ? new Date(submission.submittedAt).toLocaleString()
-        : "Unknown"}
-      {submission?.grade && (
-        <div className="mt-2">
-          <span className="font-medium text-gray-700">Grade:</span>{" "}
-          <span className="text-green-600">{submission.grade}/100</span>
-        </div>
-      )}
-    </div>
-  </div>
-);
-
-const SubmissionForm = ({
-  onSubmit,
-  content,
-  onContentChange,
-  onFileChange,
-  file,
-  disabled,
-}) => (
-  <form onSubmit={onSubmit} className="mt-4">
-    <textarea
-      className="w-full p-3 border rounded-md"
-      placeholder="Enter submission text..."
-      value={content}
-      onChange={(e) => onContentChange(e.target.value)}
-      disabled={disabled}
-    />
-    <input
-      type="file"
-      className="mt-2"
-      onChange={onFileChange}
-      disabled={disabled}
-    />
-    <button
-      type="submit"
-      className="mt-3 bg-blue-500 text-white py-2 px-4 rounded-md"
-      disabled={disabled}
-    >
-      Submit
-    </button>
-  </form>
-);
 
 export default StudentAssignments;

@@ -7,17 +7,16 @@ const submissionSchema = new mongoose.Schema(
       ref: "Assignment",
       required: true,
     },
-    studentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    fileUrl: { type: String, required: true },
-    grade: { type: Number, default: null },
-    feedback: { type: String, default: "" },
+    // studentId: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "User",
+    //   required: true,
+    // },
+    fileUrl: { type: String }, // Optional
+    content: { type: String }, // Add this field for text submissions
   },
   { timestamps: true }
 );
 
 const Submission = mongoose.model("Submission", submissionSchema);
-export default Submission; // ✅ Ensure this is a default export
+export default Submission;

@@ -98,7 +98,7 @@ const Sidebar = () => {
           isOpen={isOpen}
           Icon={FaBullhorn}
           text="Announcements"
-          link="/student/communication"
+          link="/student/announcements"
         />
         <SidebarItem
           isOpen={isOpen}

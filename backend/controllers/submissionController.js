@@ -4,9 +4,9 @@ import Assignment from "../models/assignmentSchema.js";
 // 📌 Submit an Assignment
 export const submitAssignment = async (req, res) => {
   try {
-    const { studentId, assignmentId, fileUrl } = req.body;
+    const { studentId, assignmentId, fileUrl, student } = req.body;
 
-    if (!studentId || !assignmentId || !fileUrl) {
+    if (!studentId || !assignmentId || !fileUrl || !student) {
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });
@@ -25,6 +25,7 @@ export const submitAssignment = async (req, res) => {
       assignmentId,
       studentId,
       fileUrl,
+      student,
     });
 
     await newSubmission.save();
@@ -65,6 +66,16 @@ export const getSubmissionsByAssignment = async (req, res) => {
       message: "Error fetching submissions",
       error,
     });
+  }
+};
+export const getAllSubmissions = async (req, res) => {
+  try {
+    const submissions = await Submission.find();
+    res.status(200).json({ success: true, submissions });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching submissions", error });
   }
 };
 
